@@ -1,0 +1,82 @@
+version: "2.4"
+services:
+  #myapp-jwt-authentication:
+  #  image: effetivo/springboot-jwt-authentication
+  #  container_name: myapp-jwt-authentication
+  #  mem_limit: 256m
+  #  user: root  # has to run as root user, because it needs to write logs to shared volume
+  #  environment:
+  #    - LOG_FILE=/logs/jwt-authentication-application.log
+  #    - DB_HOST=postgres
+  #    - DB_NAME=${POSTGRES_DB}
+  #  ports:
+  #    - "8080:8080"
+  #  depends_on:
+  #    - postgres
+  #  volumes:
+  #    - log_volume:/logs
+
+  postgres:
+    image: "postgres:${POSTGRES_VERSION}"
+    container_name: postgres
+    mem_limit: 256m
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    mem_limit: 128m
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    volumes:
+      - "../src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    mem_limit: 256m
+    ports:
+      - 3000:3000
+
+  splunk:
+    image: splunk/splunk
+    container_name: splunk
+    mem_limit: 512m
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_USER=root
+      - SPLUNK_PASSWORD=password
+      - SPLUNK_ENABLE_LISTEN=9997
+    ports:
+      - 8000:8000
+      - 9997:9997
+
+  splunkforwarder:
+    image: splunk/universalforwarder:latest
+    container_name: splunkforwarder
+    mem_limit: 256m
+    environment:
+      - SPLUNK_START_ARGS=--accept-license --answer-yes
+      - SPLUNK_FORWARD_SERVER=splunk:9997
+      - SPLUNK_USER=root
+      - SPLUNK_PASSWORD=password
+      - SPLUNK_ADD=monitor /logs
+    restart: always
+    depends_on:
+      - splunk
+    volumes:
+      - "../logs:/logs"
+      #- log_volume:/logs
+
+volumes:
+  postgres:
+  log_volume:
