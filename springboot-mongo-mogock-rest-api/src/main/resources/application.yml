@@ -1,0 +1,29 @@
+# Server configuration
+server:
+  port: 8081 #set your port
+  shutdown: graceful
+  error:
+    include-stacktrace: ON_PARAM
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://effetivo-site:BhXtjUjzaRht3VQO@effetivo-site-cluster.lovuw.mongodb.net/db-marvel?retryWrites=true&w=majority
+    web:
+      pageable:
+        page-parameter: page
+        size-parameter: size
+
+mongock:
+  change-logs-scan-package:
+    - com.marvel.api.mongo
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+marvel:
+  api:
+    copyright: © 2021 MARVEL
+    attributionText: Data provided by Marvel. © 2021 MARVEL
+    attributionHTML: <a href="http://marvel.com">Data provided by Marvel. © 2021 MARVEL</a>
