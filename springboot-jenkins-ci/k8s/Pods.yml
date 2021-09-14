@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sampleapp
+  labels:
+    app: sampleapp
+spec:
+  containers:
+    - name: sampleapp
+      image: effetivo/sample:tagVersion
+      ports:
+        - containerPort: 8081

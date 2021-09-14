@@ -1,0 +1,111 @@
+pipeline {
+
+    /*agent any*/
+    
+    agent { 
+        docker {
+            image 'maven:3.8.1-adoptopenjdk-11'
+            args  '-v /tmp:/tmp'
+        }        
+    }
+   
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
+    }        
+
+    environment{
+        DOCKER_TAG = getDockerTag()
+        DOCKER_IMAGE_TAG = "effetivo/sample:${DOCKER_TAG}"
+        DOCKERHUB_CREDENTIALS = credentials('effetivo-dockerhub')        
+    }
+
+
+    stages {
+
+        stage('Compile') {
+            steps {
+                echo "Iniciando build #${env.BUILD_NUMBER}"
+                sh './mvnw -version'
+                sh './mvnw clean compile'
+            }
+        }
+
+        stage('Test') {
+
+            steps {
+                sh './mvnw test'
+            }
+
+            post {
+                always {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                }
+            }
+        }
+
+        stage('Build') {
+
+            steps {
+                sh './mvnw package -DskipTests'
+            }
+
+            post {
+                success {
+                    archiveArtifacts 'target/*.jar'
+                }
+            }
+
+        }  
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE_TAG . '
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                sh 'docker push effetivo/sample:latest'
+            }
+        } 
+
+        stage('Deploy K8S') {
+            steps {
+                sh "chmod +x changeTag.sh"
+                sh "./changeTag.sh ${DOCKER_TAG}"
+                cat node-app-pod.yml
+                echo "...need to implement..."
+                echo "${env.BUILD_NUMBER}"
+                /*
+                sshagent(['kops-machine']) {
+                    sh "scp -o StrictHostKeyChecking=no services.yml node-app-pod.yml ec2-user@52.66.70.61:/gine/ec2-user"
+                    try {
+                        sh "ssh ec2-user@52.66.70.61 kubectl apply -f ."
+                    }catch(error) {
+                        sh "ssh ec2-user@52.66.70.61 kubectl create -f ."
+                    }
+                }
+                */
+            }
+        }
+
+    }
+
+    post {
+        always {
+            sh 'docker logout'
+        }
+    }  
+}
+
+def getDockerTag(){
+    def tag  = sh script: 'git rev-parse HEAD', returnStdout: true
+    return tag
+}
