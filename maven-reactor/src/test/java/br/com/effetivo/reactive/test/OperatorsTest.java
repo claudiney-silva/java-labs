@@ -1,5 +1,9 @@
 package br.com.effetivo.reactive.test;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -8,9 +12,11 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+import reactor.util.function.Tuple3;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -205,6 +211,26 @@ public class OperatorsTest {
     }
 
     @Test
+    public void concatOperatorError() {
+        Flux<String> flux1 = Flux.just("a", "b")
+                .map(s -> {
+                    if (s.equals("b")) {
+                        throw new IllegalArgumentException("Valor inválido: "+s);
+                    }
+                    return s;
+                });
+        Flux<String> flux2 = Flux.just("c", "d");
+
+        Flux<String> concatFlux = Flux.concatDelayError(flux1, flux2).log();
+
+        StepVerifier.create(concatFlux)
+                .expectSubscription()
+                .expectNext("a", "c", "d")
+                .expectError(IllegalArgumentException.class)
+                .verify();
+    }
+
+    @Test
     public void concatWithOperator() {
         Flux<String> flux1 = Flux.just("a", "b");
         Flux<String> flux2 = Flux.just("c", "d");
@@ -230,6 +256,187 @@ public class OperatorsTest {
                 .expectNext("BC","BD")
                 .expectComplete()
                 .verify();
+    }
+
+    @Test
+    public void mergeOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a", "b").delayElements(Duration.ofMillis(200));
+        Flux<String> flux2 = Flux.just("c", "d");
+
+        Flux<String> mergeFlux = Flux.merge(flux1, flux2)
+                .delayElements(Duration.ofMillis(200))
+                .log();
+
+        //mergeFlux.subscribe(log::info);
+
+        //Thread.sleep(1000);
+
+        StepVerifier
+                .create(mergeFlux)
+                .expectSubscription()
+                .expectNext("c","d","a","b")
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    public void mergeWithOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a", "b").delayElements(Duration.ofMillis(200));
+        Flux<String> flux2 = Flux.just("c", "d");
+
+        Flux<String> mergeFlux = flux1.mergeWith(flux2)
+                .delayElements(Duration.ofMillis(200))
+                .log();
+
+        //mergeFlux.subscribe(log::info);
+
+        //Thread.sleep(1000);
+
+        StepVerifier
+                .create(mergeFlux)
+                .expectSubscription()
+                .expectNext("c","d","a","b")
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    public void mergeSequencialOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a", "b").delayElements(Duration.ofMillis(200));
+        Flux<String> flux2 = Flux.just("c", "d");
+
+        Flux<String> mergeFlux = Flux.mergeSequential(flux1, flux2, flux1)
+                .delayElements(Duration.ofMillis(200))
+                .log();
+
+        //mergeFlux.subscribe(log::info);
+
+        //Thread.sleep(1000);
+
+        StepVerifier
+                .create(mergeFlux)
+                .expectSubscription()
+                .expectNext("a","b","c","d","a","b")
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    public void mergeDelayErrorOperator() throws InterruptedException {
+        Flux<String> flux1 = Flux.just("a", "b")
+                .map(s -> {
+                    if (s.equals("b")) {
+                        throw new IllegalArgumentException("Valor inválido: "+s);
+                    }
+                    return s;
+                })
+                .doOnError(t->log.error("Error with this"));
+        Flux<String> flux2 = Flux.just("c", "d");
+
+        Flux<String> mergeFlux = Flux.mergeDelayError(1,flux1, flux2, flux1)
+                .log();
+
+        mergeFlux.subscribe(log::info);
+
+        StepVerifier
+            .create(mergeFlux)
+            .expectSubscription()
+            .expectNext("a", "c","d","a")
+            .expectError()
+            .verify();
+
+    }
+
+    @Test
+    public void flatMapOperator() throws Exception {
+        Flux<String> flux = Flux.just("a", "b");
+
+        Flux<String> flatFlux = flux.map(String::toUpperCase)
+            .flatMap(this::findByName)
+            .log();
+
+        //flatFlux.subscribe(log::info);
+
+        //Thread.sleep(1000);
+
+        StepVerifier
+                .create(flatFlux)
+                .expectSubscription()
+                .expectNext("name B1", "name B2","name A1", "name A2")
+                .verifyComplete();
+    }
+
+    @Test
+    public void flatMapSequentialOperator() throws Exception {
+        Flux<String> flux = Flux.just("a", "b");
+
+        Flux<String> flatFlux = flux.map(String::toUpperCase)
+                .flatMapSequential(this::findByName)
+                .log();
+
+        StepVerifier
+                .create(flatFlux)
+                .expectSubscription()
+                .expectNext("name A1", "name A2", "name B1", "name B2")
+                .verifyComplete();
+    }
+
+    public Flux<String> findByName(String name) {
+        return name.equals("A") ? Flux.just("name A1","name A2").delayElements(Duration.ofMillis(100)) : Flux.just("name B1","name B2");
+    }
+
+    @Test
+    public void zipOperator() {
+        Flux<String> nameFlux = Flux.just("John", "Maria");
+        Flux<String> genderFlux = Flux.just("Male", "Female");
+        Flux<Integer> ageFlux = Flux.just(30, 37);
+
+        Flux<Person> personFlux = Flux.zip(nameFlux, genderFlux, ageFlux)
+                .flatMap(tuple -> Flux.just(new Person(tuple.getT1(), tuple.getT2(), tuple.getT3())));
+
+        personFlux.subscribe(person -> log.info(person.toString()));
+
+        StepVerifier
+            .create(personFlux)
+                .expectSubscription()
+                .expectNext(
+                        new Person("John", "Male", 30),
+                        new Person("Maria", "Female", 37)
+                )
+                .verifyComplete();
+
+    }
+
+    @Test
+    public void zipWithOperator() {
+        Flux<String> nameFlux = Flux.just("John", "Maria");
+        Flux<String> genderFlux = Flux.just("Male", "Female");
+
+        Flux<Person> personFlux = nameFlux
+                .zipWith(genderFlux)
+                .flatMap(tuple -> Flux.just(new Person(tuple.getT1(), tuple.getT2(), 0)));
+
+        personFlux.subscribe(person -> log.info(person.toString()));
+
+        StepVerifier
+                .create(personFlux)
+                .expectSubscription()
+                .expectNext(
+                        new Person("John", "Male", 0),
+                        new Person("Maria", "Female", 0)
+                )
+                .verifyComplete();
+
+    }
+
+    @AllArgsConstructor
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    class Person {
+        private String name;
+        private String gender;
+        private int age;
     }
 
 }
