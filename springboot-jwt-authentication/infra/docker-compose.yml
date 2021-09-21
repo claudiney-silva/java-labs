@@ -58,24 +58,30 @@ services:
       - SPLUNK_ENABLE_LISTEN=9997
     ports:
       - 8000:8000
+      - 8088:8088
       - 9997:9997
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'https://localhost:8000']
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
-  splunkforwarder:
-    image: splunk/universalforwarder:latest
-    container_name: splunkforwarder
-    mem_limit: 256m
-    environment:
-      - SPLUNK_START_ARGS=--accept-license --answer-yes
-      - SPLUNK_FORWARD_SERVER=splunk:9997
-      - SPLUNK_USER=root
-      - SPLUNK_PASSWORD=password
-      - SPLUNK_ADD=monitor /logs
-    restart: always
-    depends_on:
-      - splunk
-    volumes:
-      - "../logs:/logs"
-      #- log_volume:/logs
+  #splunkforwarder:
+  #  image: splunk/universalforwarder:latest
+  #  container_name: splunkforwarder
+  #  mem_limit: 256m
+  #  environment:
+  #    - SPLUNK_START_ARGS=--accept-license --answer-yes
+  #    - SPLUNK_FORWARD_SERVER=splunk:9997
+  #    - SPLUNK_USER=root
+  #    - SPLUNK_PASSWORD=password
+  #    - SPLUNK_ADD=monitor /logs
+  #  restart: always
+  #  depends_on:
+  #    - splunk
+  #  volumes:
+  #    - "../logs:/logs"
+  #    #- log_volume:/logs
 
   jaeger:
     image: jaegertracing/all-in-one:1.7

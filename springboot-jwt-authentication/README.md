@@ -31,3 +31,8 @@ ou
 ```
 mvn install -Ddocker.registry.username=effetivo -Ddocker.registry.password=YOUR-PASSWORD
 ```
+
+Entrar na console bash do container
+```
+docker-compose exec <CONTAINER> bash
+```

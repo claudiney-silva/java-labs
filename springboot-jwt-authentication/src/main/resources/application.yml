@@ -1,6 +1,9 @@
 # Server configuration
 server:
   port: 8080 #set your port
+  tomcat:
+    threads:
+      max=20:
   shutdown: graceful
   error:
     include-stacktrace: ON_PARAM
