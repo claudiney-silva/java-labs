@@ -1,0 +1,69 @@
+version: "3.9"
+services:
+  postgres:
+    extends:
+      file: docker-compose-common.yml
+      service: postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_SCHEMA: public
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+      #JDBC_PARAMS: "ssl=true"
+    ports:
+      - 8082:8080
+    depends_on:
+      - postgres
+
+  #jenkins:
+  #  image: jenkins/jenkins:lts
+  #  container_name: jenkins
+  #  privileged: true
+  #  user: root
+  #  ports:
+  #    - 8083:8080
+  #    - 50003:50000
+  #  environment:
+  #      - JENKINS_OPTS='--prefix=/jenkins'
+  #  volumes:
+  #      - /var/run/docker.sock:/var/run/docker.sock
+  #      - jenkins_home:/var/jenkins_home
+  #  secrets:
+  #      - jenkins-user
+  #      - jenkins-pass
+  #  volumes:
+  #    - ../../../__volumes__/jenkins_data:/var/jenkins_home
+  #    - /var/run/docker.sock:/var/run/docker.sock
+  #    - $(which docker):/usr/bin/docker
+
+#secrets:
+#  jenkins-pass:
+#    external: true
+#  jenkins-user:
+#    external: true
+
+#prometheus:
+#  extends:
+#    file: docker-compose-common.yml
+#    service: prometheus
+#  volumes:
+#    - "./src/main/resources/prometheus.yml:/etc/prometheus/prometheus.yml"
+
+#grafana:
+#  extends:
+#    file: docker-compose-common.yml
+#    service: grafana
+
+volumes:
+  postgres:

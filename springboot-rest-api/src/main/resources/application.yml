@@ -1,0 +1,62 @@
+# Server configuration
+server:
+  port: 8080 #set your port
+  shutdown: graceful
+  error:
+    include-stacktrace: ON_PARAM
+
+# Spring Boot configuration
+spring:
+  application:
+    name: effetivo-restapijavascriptboot
+  lifecycle:
+    timeout-per-shutdown-phase: 30s # Gracefull shutdown configuration
+  profiles:
+    active: development
+  # Security configuration
+  security:
+    user:
+      name: user
+      password: user
+  # Database
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:rest-api-java-springboot}
+    username: ${DB_USER:db}
+    password: ${DB_PASSWORD:admin}
+  # JPA properties
+  jpa:
+    hibernate:
+      ddl-auto: update # When you launch the application for the first time - switch "none" at "create"
+    #show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    open-in-view: false
+    generate-ddl: true
+
+# Logger configuration
+logging:
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+  level:
+    org.springframework: info
+    org:
+      hibernate:
+        SQL: DEBUG
+
+hibernate:
+  globally_quoted_identifiers: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+info:
+  app: Spring Boot 2 API
+  website: https://effetivo.com.br
+  github: https://github.com/effetivo
