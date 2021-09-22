@@ -1,0 +1,26 @@
+server:
+  port: 8888
+
+myapp:
+  listener.enabled: true
+  topic:
+    name: users
+    partitions-num: 3
+    replication-factor: 1
+
+spring:
+  profiles:
+    active: dev
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: latest
+      group-id: users_group
+    producer:
+      acks: all
+
+logging:
+  level:
+    root: info
+
+

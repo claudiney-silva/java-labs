@@ -1,0 +1,35 @@
+{
+  "type": "record",
+  "name": "UserEvent",
+  "namespace": "br.com.effetivo.kafkaavrotestcontainers.avro",
+  "fields": [
+    {
+      "name": "id",
+      "type": {
+        "type": "string",
+        "avro.java.string": "String",
+        "logicalType": "UUID"
+      }
+    },
+    {
+      "name": "firstName",
+      "type": [
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "lastName",
+      "type": [
+        {
+          "type": "string",
+          "avro.java.string": "String"
+        },
+        "null"
+      ]
+    }
+  ]
+}
