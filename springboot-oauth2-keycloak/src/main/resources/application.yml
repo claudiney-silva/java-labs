@@ -1,0 +1,32 @@
+# Server configuration
+server:
+  port: 8081 #set your port
+#  servlet:
+#    context-path: /resource-server
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/auth/realms/demo
+          jwk-set-uri: http://localhost:8082/auth/realms/demo/protocol/openid-connect/certs
+      client:
+        registration:
+          demo: # nome do client-id no keycloak
+            authorization-grant-type: client_credentials
+            client-id: demo
+            client-secret: 2d9d6579-c935-4a76-a1a5-d9e0736a768e
+        provider:
+          demo: # nome do client-id no keycloak
+            token-uri: http://localhost:8082/auth/realms/demo/protocol/openid-connect/token
+            #authorization-uri: http://localhost:8082/auth/realms/demo/protocol/openid-connect/auth
+            #user-info-uri: http://localhost:8082/auth/realms/demo/protocol/openid-connect/userinfo
+            #user-name-attribute: sub
+            #jwk-set-uri: http://localhost:8082/auth/realms/demo/protocol/openid-connect/certs
+
+logging:
+  level:
+    org:
+      srpingframework:
+        security: DEBUG
