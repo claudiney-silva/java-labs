@@ -122,6 +122,12 @@
 			<artifactId>postgresql</artifactId>
 			<version>1.15.3</version>
 		</dependency>
+		<!-- Este plugin é utilizado para acionar comandos do liquibase pelo maven. Não é requerido pelo springboot -->
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-maven-plugin</artifactId>
+			<version>4.4.3</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -147,6 +153,15 @@
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
+			<!-- Este plugin é utilizado para acionar comandos do liquibase pelo maven. Não é requerido pelo springboot -->
+			<plugin>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-maven-plugin</artifactId>
+				<version>4.4.3</version>
+				<configuration>
+					<propertyFile>src/main/resources/liquibase.properties</propertyFile>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

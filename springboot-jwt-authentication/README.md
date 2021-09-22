@@ -1,8 +1,20 @@
 # JWT Authentication
 Esta é uma aplicação simples demonstrando o uso de Jwt como 
-camada de segurança. Além disso na implementação utilizamos
-Postgres, Liquibase e algumas ferramentas de observability,
-como: Prometheus, Grafana e Splunk.
+camada de segurança. Além disso na implementação utilizamos:
+
+* Postgres
+* Liquibase
+* Prometheus
+* Grafana
+* Splunk (com logs enviados via Log4j)
+
+## Liquibase
+
+Comando para executar o liquibase e gerar uma cópia do banco de dados atual:
+```
+mvn liquibase:generateChangeLog
+```
+
 
 ## Alguns comandos referência
 
