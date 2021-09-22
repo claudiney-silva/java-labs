@@ -1,0 +1,20 @@
+spring:
+  data:
+    cassandra:
+      port: ${CASSANDRA_PORT:9042}
+      contact-points: ${CASSANDRA_HOST:localhost}
+      keyspace-name: mykeyspace
+      #entity-base-package: br.com.effetivo.k8s.domain    
+      schema-action: CREATE_IF_NOT_EXISTS
+      local-datacenter: ${CASSANDRA_DC:DC1-K8Demo}
+      username: cassandra
+      password: pass123
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
+
+topic:
+  name: orders
+
+
+#load-balancing-policy.local-datacenter = datacenter1      
+

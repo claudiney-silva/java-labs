@@ -1,0 +1,115 @@
+pipeline {
+
+    /*agent any*/
+    
+    agent { 
+        docker {
+            image 'maven:3.8.1-adoptopenjdk-11'
+            args  '-v /tmp:/tmp'
+        }        
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
+    }        
+
+    environment{
+        DOCKERHUB_ID = "effetivo"
+        DOCKER_TAG = readMavenPom().getVersion()
+        DOCKER_ARTIFACT = readMavenPom().getArtifactId()
+        DOCKER_IMAGE_TAG = "${DOCKERHUB_ID}/${DOCKER_ARTIFACT}:${DOCKER_TAG}"
+        DOCKER_IMAGE_LATEST = "${DOCKERHUB_ID}/${DOCKER_ARTIFACT}:latest"
+    }
+
+    stages {
+
+        stage('Starting') {
+            steps {
+                echo "Build #${env.BUILD_ID}"
+            }
+        }
+
+        stage('Get Source') {
+            steps {
+                git url: 'https://github.com/effetivo/java-springboot-kubernetes-ci-aws.git', branch: 'main'
+            }
+        }        
+
+        stage('Compile') {
+            steps {
+                echo "Iniciando build #${env.BUILD_NUMBER}"
+                sh 'mvn -version'
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+
+            steps {
+                sh 'mvn test'
+            }
+
+            post {
+                always {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                }
+            }
+        }
+
+        stage('Build') {
+
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+
+            post {
+                success {
+                    archiveArtifacts 'target/*.jar'
+                }
+            }
+
+        }  
+
+        stage('Docker Build Image') {
+
+            steps {
+                script {
+                    dockerapp = docker.build("${DOCKER_IMAGE_TAG}",
+                      '-f ./Dockerfile .')
+                }
+            }
+
+        }
+
+
+        stage('Docker Push Image') {
+            steps {
+                script {
+                        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        dockerapp.push('latest')
+                        dockerapp.push("${DOCKER_TAG}")
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Kubernetes') {
+            agent {
+                kubernetes {
+                    cloud 'kubernetes'
+                }
+            }
+            environment {
+                tag_version = "${DOCKER_TAG}"
+            }
+
+            steps {
+                sh 'sed -i "s/latest/$tag_version/g" ./k8s/deployment.yaml'
+                sh 'cat ./k8s/deployment.yaml'
+                kubernetesDeploy(configs: '**/k8s/**', kubeconfigId: 'kubeconfig')
+            }
+        }      
+
+    }
+ 
+}

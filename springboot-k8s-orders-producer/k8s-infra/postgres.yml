@@ -1,0 +1,61 @@
+# PostgreSQL StatefulSet ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-db-config
+  labels:
+    app: postgres-db
+data:
+  POSTGRES_DB: k8s-db
+  POSTGRES_USER: k8s-user
+  POSTGRES_PASSWORD: k8s-password
+  PGDATA: /data/pgdata
+---
+# PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-db
+spec:
+  serviceName: postgres-service
+  replicas: 2  
+  selector:
+    matchLabels:
+      app: postgres-db
+  template:
+    metadata:
+      labels:
+        app: postgres-db
+    spec:
+      containers:
+        - name: postgres-db
+          image: postgres:latest
+          volumeMounts:
+            - name: postgres-db-disk
+              mountPath: /data
+          # Config from ConfigMap
+          envFrom:
+          - configMapRef:
+              name: postgres-db-config
+  # Volume Claim
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-db-disk
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+# PostgreSQL StatefulSet Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres-db
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432
