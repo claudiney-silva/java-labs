@@ -1,0 +1,42 @@
+myapp:
+  version: @version@
+  description: @description@
+  author: Claudiney Calixto da Silva
+  email: clau.li.erd@gmail.com
+  url: https://effetivo.com.br
+
+server:
+  shutdown: graceful
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: ON_PARAM #NEVER
+    include-exception: false
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html    
+
+spring:
+  application:
+    name: K8S Account Application
+  lifecycle:
+    timeout-per-shutdown-phase: 30s # Gracefull shutdown configuration    
+  data:
+    cassandra:
+      port: ${CASSANDRA_PORT:9042}
+      contact-points: ${CASSANDRA_HOST:localhost}
+      keyspace-name: ${CASSANDRA_KEYSPACE:account}
+      entity-base-package: br.com.effetivo.account.model    
+      schema-action: CREATE_IF_NOT_EXISTS
+      local-datacenter: ${CASSANDRA_DC:datacenter1}
+      username: ${CASSANDRA_USERNAME:cassandra}
+      password: ${CASSANDRA_PASSWORD:cassandra}
+      #connect-timeout-millis: 20000ms
+      #read-timeout-millis: 20000ms
+      #connect-timeout: 20000ms
+      #read-timeout: 20000ms
+      #pool:
+      #pool-timeout: 20000ms
