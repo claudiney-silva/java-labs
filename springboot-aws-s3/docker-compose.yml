@@ -1,0 +1,16 @@
+version: '3.2'
+services:
+  localstack:
+    network_mode: bridge
+    image: localstack/localstack:latest
+    container_name: localstack_aws
+    environment:
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - LAMBDA_EXECUTOR=docker
+    ports:
+      - '4563-4599:4563-4599'
+      - '8055:8080'
+    volumes:
+      - './.localstack:/tmp/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
