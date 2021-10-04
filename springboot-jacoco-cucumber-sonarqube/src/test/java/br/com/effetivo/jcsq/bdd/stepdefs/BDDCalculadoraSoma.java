@@ -36,7 +36,7 @@ public class BDDCalculadoraSoma {
 
     @Given("eu quero somar dois números")
     public void given_eu_quero_somar_dois_numeros() {
-        scenario.log(String.format("Request %1$s", "ok"));
+        scenario.log("Somar dois números");
     }
 
     @When("eu informo {int} e {int}")
@@ -48,6 +48,8 @@ public class BDDCalculadoraSoma {
 
     @Then("a soma é retornada")
     public void then_a_soma_e_retornada() {
+        scenario.log(String.format("a soma é %s e o esperado é %s", result, expected));
+
         assertNotNull(expected);
         assertNotNull(result);
         assertEquals(expected, result);
