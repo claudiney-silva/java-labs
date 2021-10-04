@@ -1,0 +1,16 @@
+version: "2.4"
+services:
+  sonarqube:
+    image: sonarqube
+    container_name: sonarqube
+    privileged: true
+    depends_on:
+      - postgres
+    environment:
+      - "ES_JAVA_HOME=/opt/java/openjdk"
+    volumes:ies:/opt/sonarqube/conf/sonar.properties
+    - ./data:/opt/sonarqube/data
+    - ./logs:/opt/sonarqube/logs
+    #-./extensions:/opt/sonarqube/extensions
+    ports:
+      - 9000:9000
