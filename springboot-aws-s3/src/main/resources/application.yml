@@ -1,0 +1,8 @@
+app:
+  path: api/v1/image
+
+aws:
+  region: us-east-1
+  s3:
+    bucketName: effetivo-bucket
+    endpoint: http://localhost:4566
