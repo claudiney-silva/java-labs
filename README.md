@@ -4,13 +4,29 @@
 
 Tutorial sobre programação reativa com project reactor.
 
+## micronaut-rest-api
+
+API Rest com o micronaut
+
 ## springboot-aws-localstack
 
 Projeto com AWS Localstack
 
+## springboot-aws-s3
+
+API rest que manipula imagens num Bucket S3 da AWS ou localmente com Localstack
+
 ## springboot-cassandra-rest-api
 
 Rest API com Cassandra
+
+## springboot-jacoco-cucumber-sonarqube
+
+Exemplo utilizando Jacoco, Cucumber e Sonarqube
+
+## springboot-jaeger-opentelemetry
+
+Exemplo utilizando o Opentelemetry para enviar eventos para o Jaeger
 
 ## springboot-jenkins-ci
 
