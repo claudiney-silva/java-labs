@@ -1,0 +1,14 @@
+server:
+  port: 8002
+
+okta:
+  oauth2:
+    issuer: https://dev-XXXXXXX.okta.com/oauth2/default
+    clientId: CLIENT_ID
+    clientSecret: SECRET
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "refresh"
