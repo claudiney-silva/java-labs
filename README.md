@@ -70,9 +70,21 @@ Api rest com mongodb utilizando o mongock como alternativa ao liquibase.
 
 Implementação OAuth2 com Keycloak
 
+## springboot-oauth2-okta
+
+Implementação OAuth2 com okta
+
 ## springboot-rest-api
 
 API rest completa utilizando RestTemplate
+
+## springboot-springcloud-config
+
+Spring Cloud Config, Oauth2 com okta e dois clients
+
+## springboot-springcloud-gateway
+
+Spring cloud gateway
 
 ## springboot-webflux
 
