@@ -1,8 +1,8 @@
 package br.com.effetivo.kafkaavrotestcontainers.service;
 
-import br.com.effetivo.kafkaavrotestcontainers.avro.UserEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
@@ -23,27 +23,27 @@ import java.util.concurrent.TimeoutException;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class KafkaServiceImpl implements KafkaService {
 
     @Value("${myapp.topic.name}")
     private String topicName;
 
-    private final KafkaTemplate<String, UserEvent> kafkaTemplate;
+    private final KafkaTemplate<String, GenericRecord> kafkaTemplate;
 
     @Override
-    public ListenableFuture<SendResult<String, UserEvent>> send(UserEvent message) {
-        ProducerRecord<String, UserEvent> producerRecord = buildProducerRecord(message);
-        ListenableFuture<SendResult<String, UserEvent>> listenableFuture = kafkaTemplate.send(producerRecord);
+    public ListenableFuture<SendResult<String, GenericRecord>> send(String transactionId, GenericRecord record) {
+        ProducerRecord<String, GenericRecord> producerRecord = buildProducerRecord(transactionId, record);
+        ListenableFuture<SendResult<String, GenericRecord>> listenableFuture = kafkaTemplate.send(producerRecord);
         listenableFuture.addCallback(
-                new ListenableFutureCallback<SendResult<String, UserEvent>>() {
+                new ListenableFutureCallback<SendResult<String, GenericRecord>>() {
                     @Override
-                    public void onSuccess(SendResult<String, UserEvent> result) {
-                        log.info("Sent message=[{}] with offset=[{}]", message, result.getRecordMetadata().offset());
+                    public void onSuccess(SendResult<String, GenericRecord> result) {
+                        log.info("Sent message=[{}] with offset=[{}]", record, result.getRecordMetadata().offset());
                     }
 
                     @Override
                     public void onFailure(Throwable ex) {
-                        log.info("Unable to send message=[{}] due to : {}", message, ex.getMessage());
+                        log.info("Unable to send message=[{}] due to : {}", record, ex.getMessage());
                     }
                 }
         );
@@ -51,9 +51,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public SendResult<String, UserEvent> sendSynchronous(UserEvent message) throws ExecutionException, InterruptedException, TimeoutException {
+    public SendResult<String, GenericRecord> sendSynchronous(String transactionId, GenericRecord record) throws ExecutionException, InterruptedException, TimeoutException {
         try {
-            return kafkaTemplate.sendDefault(message.getId(), message).get(1, TimeUnit.SECONDS);
+            return kafkaTemplate.sendDefault(transactionId, record).get(1, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException e) {
             log.error("ExecutionException/InterruptedException Sending the Message and the exception is {}", e.getMessage());
             throw e;
@@ -64,13 +64,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void handleRecovery(ConsumerRecord<String, UserEvent> consumerRecord) {
+    public void handleRecovery(ConsumerRecord<String, GenericRecord> consumerRecord) {
         log.info("handleRecovery for {}", consumerRecord.value());
     }
 
-    private ProducerRecord<String, UserEvent> buildProducerRecord(UserEvent userEvent) {
+    private ProducerRecord<String, GenericRecord> buildProducerRecord(String transactionId, GenericRecord record) {
         List<Header> recordHeaders = Arrays.asList(new RecordHeader("event-source", "scanner".getBytes()));
-        return new ProducerRecord<>(topicName, null, userEvent.getId(), userEvent, recordHeaders);
+        return new ProducerRecord<>(topicName, null, transactionId, record, recordHeaders);
     }
 
 }

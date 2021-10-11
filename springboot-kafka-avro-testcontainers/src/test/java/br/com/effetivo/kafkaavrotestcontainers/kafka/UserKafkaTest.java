@@ -1,9 +1,10 @@
 package br.com.effetivo.kafkaavrotestcontainers.kafka;
 
-import br.com.effetivo.kafkaavrotestcontainers.avro.UserEvent;
-import br.com.effetivo.kafkaavrotestcontainers.service.UserService;
+import br.com.effetivo.kafkaavrotestcontainers.avro.UserEventCreate;
+import br.com.effetivo.kafkaavrotestcontainers.service.KafkaService;
 import br.com.effetivo.kafkaavrotestcontainers.testcontainer.KafkaTestcontainer;
 import kafka.server.ClientQuotaManager;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -33,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserKafkaTest extends KafkaTestcontainer {
 
     @Autowired
-    private UserService userService;
+    private KafkaService kafkaService;
 
     private static final String EVENT_TYPE_KEY = "eventType";
     private static final String EVENT_UPDATE = "UPDATE";
@@ -64,7 +65,7 @@ class UserKafkaTest extends KafkaTestcontainer {
     @Test
     void testSendMessage() throws ExecutionException, InterruptedException {
 
-        UserEvent event = UserEvent
+        UserEventCreate event = UserEventCreate
                 .newBuilder()
                 .setId(UUID.randomUUID().toString())
                 .setFirstName("Jane")
@@ -76,7 +77,7 @@ class UserKafkaTest extends KafkaTestcontainer {
 
         sendEvent(producer, record);
 
-        ConsumerRecord<String, UserEvent> singleRecord =
+        ConsumerRecord<String, UserEventCreate> singleRecord =
                 KafkaTestUtils.getSingleRecord(consumer, TOPIC);
 
         assertThat(singleRecord.value()).isEqualTo(event);
@@ -85,16 +86,16 @@ class UserKafkaTest extends KafkaTestcontainer {
     @Test
     void testSendMessageByService() throws ExecutionException, InterruptedException {
 
-        UserEvent event = UserEvent
+        UserEventCreate event = UserEventCreate
                 .newBuilder()
                 .setId(UUID.randomUUID().toString())
                 .setFirstName("Jane")
                 .setLastName("Doe")
                 .build();
 
-        userService.send(event);
+        kafkaService.send(event.getId(), event);
 
-        ConsumerRecord<String, UserEvent> singleRecord =
+        ConsumerRecord<String, GenericRecord> singleRecord =
                 KafkaTestUtils.getSingleRecord(consumer, TOPIC);
 
         assertThat(singleRecord.value()).isEqualTo(event);

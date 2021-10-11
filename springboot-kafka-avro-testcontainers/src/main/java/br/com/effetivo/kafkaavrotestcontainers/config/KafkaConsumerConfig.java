@@ -1,11 +1,12 @@
 package br.com.effetivo.kafkaavrotestcontainers.config;
 
-import br.com.effetivo.kafkaavrotestcontainers.avro.UserEvent;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -44,7 +45,7 @@ public class KafkaConsumerConfig {
     private String schemaRegistry;
 
     @Bean
-    public ConsumerFactory<String, UserEvent> consumerFactory() {
+    public ConsumerFactory<String, GenericRecord> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
@@ -55,13 +56,16 @@ public class KafkaConsumerConfig {
         props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "users_group");
 
+        props.put(AbstractKafkaAvroSerDeConfig.KEY_SUBJECT_NAME_STRATEGY, TopicRecordNameStrategy.class);
+        props.put(AbstractKafkaAvroSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, TopicRecordNameStrategy.class);
+
         return new DefaultKafkaConsumerFactory<>(props);
         //return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new AvroDeserializer<>(UserEvent.class));
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, UserEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, GenericRecord> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, GenericRecord> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.setRetryTemplate(retryTemplate());
@@ -81,7 +85,7 @@ public class KafkaConsumerConfig {
         return (context -> {
             if (context.getLastThrowable().getCause() instanceof  RecoverableDataAccessException) {
                 log.info("Inside recoverable logic");
-                ConsumerRecord<String, UserEvent> consumerRecord = (ConsumerRecord<String, UserEvent>) context.getAttribute("record");
+                ConsumerRecord<String, GenericRecord> consumerRecord = (ConsumerRecord<String, GenericRecord>) context.getAttribute("record");
                 //producerService.handleRecovery(consumerRecord);
             } else {
                 log.info("Inside recoverable logic");

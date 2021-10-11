@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "name": "UserEvent",
+  "name": "UserEventCreate",
   "namespace": "br.com.effetivo.kafkaavrotestcontainers.avro",
   "fields": [
     {
