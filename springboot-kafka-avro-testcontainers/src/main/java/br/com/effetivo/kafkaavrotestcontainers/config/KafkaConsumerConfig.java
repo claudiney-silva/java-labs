@@ -72,6 +72,12 @@ public class KafkaConsumerConfig {
         factory.setRecoveryCallback(recoveryCallBackLambda());
         factory.setErrorHandler(errorHandlerLambda());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        /*
+        factory.setRecordFilterStrategy(consumerRecord -> {
+            String xxx = new String(consumerRecord.headers().lastHeader("xxx").value());
+            return !xxx.equalsIgnoreCase("teste");
+        });
+         */
         return factory;
     }
 
