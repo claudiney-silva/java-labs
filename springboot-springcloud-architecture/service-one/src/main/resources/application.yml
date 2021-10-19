@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: service-one
+  profiles:
+    active: profile1
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      uri: http://localhost:8888
+      username: admin
+      password: password
+
+
+

@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+    gateway:
+      routes:
+        - id: service-one
+          uri: lb://service-one
+          predicates:
+            - Path=/**
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true
+  zipkin:
+    baseUrl: http://localhost:9411
+server:
+  port: 9999

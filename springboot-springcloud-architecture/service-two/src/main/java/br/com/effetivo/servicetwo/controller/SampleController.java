@@ -1,4 +1,4 @@
-package br.com.effetivo.serviceone.controller;
+package br.com.effetivo.servicetwo.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class SampleController {
     private String serverPort;
 
     private Mono<ServiceInstance> findServerInstance() {
-        return Mono.from(serviceInstanceFactory.getInstance("service-one").choose())
+        return Mono.from(serviceInstanceFactory.getInstance("service-two").choose())
                 .map(response -> response.getServer());
     }
 
@@ -41,7 +41,7 @@ public class SampleController {
 
     @GetMapping("/services")
     public Flux<List<ServiceInstance>> serviceURL() {
-        return Flux.just(discoveryClient.getInstances("service-one"));
+        return Flux.just(discoveryClient.getInstances("service-two"));
     }
 
     @GetMapping("/balancer")
