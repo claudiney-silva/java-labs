@@ -1,5 +1,0 @@
-#!/bin/sh
-
-cd ${LAMBDA_TASK_ROOT:-.}
-
-./my-lambda-native-spring3
