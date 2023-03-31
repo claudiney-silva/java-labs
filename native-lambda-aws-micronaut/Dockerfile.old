@@ -1,0 +1,33 @@
+FROM amazonlinux:2 AS graalvm
+#FROM al:latest AS graalvm
+ENV LANG=en_US.UTF-8
+RUN yum update -y && yum install -y gcc gcc-c++ zlib-devel zip tar gzip && yum clean all
+RUN curl -4 -L https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.3.0/graalvm-ce-java11-linux-amd64-22.3.0.tar.gz -o /tmp/graalvm.tar.gz \
+    && tar -zxf /tmp/graalvm.tar.gz -C /tmp \
+    && mv /tmp/graalvm-ce-java11-22.3.0 /usr/lib/graalvm \
+    && rm -rf /tmp/*
+RUN /usr/lib/graalvm/bin/gu install native-image
+ENV PATH=/usr/lib/graalvm/bin:${PATH}
+WORKDIR /home/app
+COPY classes /home/app/classes
+COPY dependency/* /home/app/libs/
+ENV USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM=false
+RUN native-image  -H:Class=com.github.claudineysilva.lambda.micronaut.FunctionLambdaRuntime -H:Name=application --no-fallback -cp "/home/app/libs/*:/home/app/classes/"
+
+FROM amazonlinux:2
+#FROM al:latest AS graalvm
+
+# Volumes (Host/Container)
+
+WORKDIR /function
+RUN yum install -y zip && yum clean all
+COPY --from=graalvm /home/app/application /function/func
+RUN echo "#!/bin/sh" >> bootstrap && echo "set -euo pipefail" >> bootstrap && echo "./func -Djava.library.path=$(pwd)" >> bootstrap
+RUN chmod 777 bootstrap
+RUN chmod 777 func
+RUN zip -j function.zip bootstrap func
+
+RUN pwd
+RUN ls -l
+
+VOLUME  /teste /function

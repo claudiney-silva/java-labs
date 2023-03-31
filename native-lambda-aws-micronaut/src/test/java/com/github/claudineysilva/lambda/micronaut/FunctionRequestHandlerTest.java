@@ -30,6 +30,6 @@ public class FunctionRequestHandlerTest {
         request.setPath("/");
         APIGatewayProxyResponseEvent response = handler.execute(request);
         assertEquals(200, response.getStatusCode().intValue());
-        assertEquals("{\"message\":\"Hello World\"}", response.getBody());
+        assertEquals("{\"message\":\"Sucesso from dockerfile automatico\"}", response.getBody());
     }
 }

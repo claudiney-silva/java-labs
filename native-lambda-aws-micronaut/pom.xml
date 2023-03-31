@@ -96,15 +96,34 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>com.google.cloud.tools</groupId>
-        <artifactId>jib-maven-plugin</artifactId>
-        <version>3.3.1</version>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
         <configuration>
-          <from>
-            <image>al:latest</image>
-          </from>
+          <buildArgs combine.children="append">
+            <buildArg>--enable-url-protocols=http</buildArg>
+            <buildArg>--H:Class=javacare</buildArg>
+          </buildArgs>
+          <environment>
+            <USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM>true</USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM>
+          </environment>
         </configuration>
       </plugin>
+      <!--
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      -->
       <plugin>
         <groupId>io.micronaut.build</groupId>
         <artifactId>micronaut-maven-plugin</artifactId>

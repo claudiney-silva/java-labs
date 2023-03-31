@@ -15,7 +15,7 @@ public class FunctionRequestHandler extends MicronautRequestHandler<APIGatewayPr
         System.out.printf("body que veio: "+input.getBody());
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         try {
-            String json = objectMapper.writeValueAsString(Collections.singletonMap("message", "Sucesso from dockerfile"));
+            String json = objectMapper.writeValueAsString(Collections.singletonMap("message", "Sucesso from dockerfile automatico"));
             response.setStatusCode(200);
             response.setBody(json);
         } catch (JsonProcessingException e) {
