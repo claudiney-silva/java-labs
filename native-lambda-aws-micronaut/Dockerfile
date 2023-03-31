@@ -16,6 +16,9 @@ RUN native-image  -H:Class=com.github.claudineysilva.lambda.micronaut.FunctionLa
 
 FROM amazonlinux:2
 #FROM al:latest AS graalvm
+
+# Volumes (Host/Container)
+
 WORKDIR /function
 RUN yum install -y zip && yum clean all
 COPY --from=graalvm /home/app/application /function/func
@@ -23,3 +26,8 @@ RUN echo "#!/bin/sh" >> bootstrap && echo "set -euo pipefail" >> bootstrap && ec
 RUN chmod 777 bootstrap
 RUN chmod 777 func
 RUN zip -j function.zip bootstrap func
+
+RUN pwd
+RUN ls -l
+
+VOLUME  /teste /function

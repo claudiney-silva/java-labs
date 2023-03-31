@@ -28,6 +28,10 @@ If you want to deploy to AWS Lambda as a GraalVM native image, run:
 ./mvnw package -Dpackaging=docker-native -Dmicronaut.native-image.args="--verbose"
 ```
 
+docker create --name dummy native-lambda-aws-micronaut:latest
+docker cp dummy:/function/function.zip ./function-x.zip
+docker rm -f dummy
+
 
 
 This will build the GraalVM native image inside a docker container and generate the `function.zip` ready for the deployment.
