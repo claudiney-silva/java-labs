@@ -1,6 +1,6 @@
 # Projetos Java
 
-List of Java Projects to practice
+List of Java Projects.
 
 ## maven-reactor
 
